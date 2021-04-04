@@ -6,9 +6,12 @@ const mysql = require('mysql');
 const path = require('path');
 
 /*
-const usersRoutes = require('./routes/users');
-const sauceRoutes = require('./routes/sauces');
-*/
+
+const authroutes = require('./routes/auth');
+const usersRoute = require('./routes/users');
+const publicationsRoute = require('./routes/publications');
+
+
 const app = express();
 
 const pool = mysql.createPool({
@@ -33,11 +36,12 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
-/*
-app.use('/api/auth', usersRoutes);
-app.use('/api/sauces', sauceRoutes);
+
+app.use('/api/auth', authroutes);
+app.use('/api/users', usersRoute);
+app.use('/api/publications', publicationsRoute);
 app.use('/images', express.static(path.join(__dirname, 'images')));
-*/
+
 
 
 
