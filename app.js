@@ -5,7 +5,6 @@ const mysql = require('mysql');
 
 const path = require('path');
 
-/*
 
 const authroutes = require('./routes/auth');
 /*const usersRoute = require('./routes/users');
