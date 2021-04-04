@@ -23,6 +23,7 @@ module.exports = (sequelize, DataTypes) => {
         admin: DataTypes.BOOLEAN
     }, {
         sequelize,
+        timestamps: false,
         modelName: 'User',
     });
     return User;
