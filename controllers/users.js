@@ -34,7 +34,7 @@ exports.updateUsers = (req, res, next) => {
     const userId = decodedToken.userId;
     let firstname = req.body.firstname;
     let lastname = req.body.lastname;
-    console.log("here", req.body)
+
 
 
     if (userId < 1 ||

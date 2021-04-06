@@ -84,7 +84,7 @@ exports.getAllArticles = (req, res, next) => {
 
 exports.getOneArticle = (req, res, next) => {
 
-    models.Article.findAll({
+    models.Article.findOne({
             where: { id: req.params.id },
             include: [{
                 model: models.User,
@@ -106,9 +106,95 @@ exports.getOneArticle = (req, res, next) => {
 };
 
 exports.updateArticle = (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
+    const userId = decodedToken.userId;
+    const title = req.body.title;
+    const description = req.body.description;
+    const articleId = req.params.id
 
+    models.Article.findOne({
+            attributes: ['title', 'description', 'id', 'UserId'],
+            where: { id: articleId }
+        })
+        .then(articleFound => {
+
+            if (articleFound) {
+                if (userId != articleFound.UserId) {
+                    return res.status(400).json({ error: 'permission denied' });
+                }
+                articleFound.update({
+                    title: (title ? title : articleFound.title),
+                    description: (description ? description : articleFound.description),
+                }).then(articleUpdate => {
+                    if (articleUpdate) {
+                        return res.status(200).json({ message: 'update!' });
+                    } else {
+                        return res.status(404).json({ error: 'cannot update' });
+
+                    }
+                }).catch(err => {
+                    return res.status(404).json({ error: 'article not found' });
+                })
+
+            }
+        }).catch(err => {
+            return res.status(400).json({ error: 'unable to find article' });
+
+        })
 };
 
 exports.deleteArticle = (req, res, next) => {
+    const token = req.headers.authorization.split(' ')[1];
+    const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
+    const userId = decodedToken.userId;
+    const title = req.body.title;
+    const description = req.body.description;
+    const articleId = req.params.id
 
+    models.Article.findOne({
+            attributes: ['title', 'description', 'id', 'UserId'],
+            where: { id: articleId }
+        })
+        .then(articleFound => {
+
+            if (articleFound) {
+                if (userId != articleFound.UserId) {
+                    return res.status(400).json({ error: 'permission denied' });
+                }
+                models.Comment.findAll({
+                        where: { articleId: articleId },
+
+                    })
+                    .then(Comments => {
+
+                        if (Comments) {
+                            Comments.forEach(comment => {
+                                comment.destroy()
+                            });
+
+                        } else {
+                            return res.status(404).json({ error: 'not found' });
+                        }
+                    })
+                    .catch(err => {
+                        return res.status(400).json({ error: 'unable to found comment' });
+
+                    })
+                articleFound.destroy()
+                    .then(deletedArticle => {
+                        return res.status(200).json({ message: 'delete!' });
+                    })
+                    .catch(err => {
+                        return res.status(400).json({ error: 'cannot delete' });
+                    })
+
+            } else {
+                return res.status(400).json({ error: 'unable to find article' });
+
+            }
+        }).catch(err => {
+            return res.status(400).json({ error: 'unable to find article' });
+
+        })
 }
