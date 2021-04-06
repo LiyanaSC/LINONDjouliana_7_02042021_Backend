@@ -21,13 +21,13 @@ module.exports = (sequelize, DataTypes) => {
         }
     };
     Article.init({
-        userId: DataTypes.INTEGER,
         publicationDate: DataTypes.DATE,
         title: DataTypes.STRING,
         description: DataTypes.STRING,
         imageUrl: DataTypes.STRING
     }, {
         sequelize,
+        timestamps: false,
         modelName: 'Article',
     });
     return Article;

@@ -17,7 +17,6 @@ schema
 
 
 exports.signup = (req, res, next) => {
-    console.log("req body", req.body)
     let email = req.body.email;
     let password = req.body.password;
     let lastname = req.body.lastname;
@@ -31,8 +30,14 @@ exports.signup = (req, res, next) => {
         firstname == null
     ) {
         return res.status(400).json({ error: 'Bad request type' });
-    } else
-    if (schema.validate(req.body.password) == false) {
+    } else if (lastname.length <= 1 ||
+        lastname.length >= 254 ||
+        firstname.length <= 1 ||
+        firstname.length >= 254
+    ) {
+        return res.status(400).json({ error: 'enter true names' });
+
+    } else if (schema.validate(req.body.password) == false) {
         return res.status(400).json({ error: 'password insecure try again' });
     } else if (validator.validate(req.body.email) == false) {
         return res.status(400).json({ error: 'not an email' });
@@ -80,32 +85,45 @@ exports.signup = (req, res, next) => {
 
 
 exports.login = (req, res, next) => {
-    if (schema.validate(req.body.password) == false) {
+    let email = req.body.email;
+    let password = req.body.password;
+
+    if (
+        email == null ||
+        password == null
+    ) {
+        return res.status(400).json({ error: 'Missing params' });
+    } else if (schema.validate(req.body.password) == false) {
         return res.status(406).send(new Error('password insecure try again'));
     } else if (validator.validate(req.body.email) == false) {
         return res.status(406).send(new Error('not a email'));
     }
-    const hashedMail = CryptoJS.SHA256(req.body.email).toString();
-    User.findOne({ email: hashedMail })
-        .then(user => {
-            if (user == undefined) {
-                res.status(401).send(new Error('permission denied'));
+    models.User.findOne({
+            where: { email: email }
+        })
+        .then(function(userFound) {
+            if (userFound) {
+                bcrypt.compare(password, userFound.password, function(errBycrypt, resBycrypt) {
+                    if (resBycrypt) {
 
-            } else {
-                bcrypt.compare(req.body.password, user.password)
-                    .then(valid => {
-                        if (!valid) {
-                            return res.status(401).json({ error: 'mot de passe incorrect' });
-                        }
-                        res.status(200).json({
-                            userId: user._id,
-                            token: jwt.sign({ userId: user._id },
-                                'RANDOM_TOKEN_SECRET', { expiresIn: '3h' }
+                        return res.status(200).json({
+                            'userId': userFound.id,
+                            'token': jwt.sign({ userId: userFound.id, isAdmin: userFound.admin },
+                                'RANDOM_TOKEN_SECRET', { expiresIn: '24h' }
                             )
-                        });
-                    })
-                    .catch(error => res.status(500).json({ error }));
+                        })
+                    }
+                    return res.status(401).json({ error: 'mot de passe incorrect' });
+
+                })
+            } else {
+                return res.status(400).json({ error: 'unable to verify user' });
             }
         })
-        .catch(error => res.status(500).json({ error }));
+        .catch(function(err) {
+            return res.status(500).json({ error: 'unable to verify user' });
+        })
+
+
+
 };

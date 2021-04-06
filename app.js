@@ -7,9 +7,9 @@ const mysql = require('mysql');
 
 
 const authroutes = require('./routes/auth');
-/*const usersRoute = require('./routes/users');
+const usersRoute = require('./routes/users');
 const publicationsRoute = require('./routes/publications');
-*/
+
 
 const app = express();
 
@@ -37,9 +37,9 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 
 app.use('/api/auth', authroutes);
-/*app.use('/api/users', usersRoute);
+app.use('/api/users', usersRoute);
 app.use('/api/publications', publicationsRoute);
-app.use('/images', express.static(path.join(__dirname, 'images')));
+/*app.use('/images', express.static(path.join(__dirname, 'images')));
 
 */
 

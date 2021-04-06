@@ -24,12 +24,11 @@ module.exports = (sequelize, DataTypes) => {
         }
     };
     Comment.init({
-        userId: DataTypes.INTEGER,
-        articleId: DataTypes.INTEGER,
         content: DataTypes.STRING,
         publicationDate: DataTypes.DATE
     }, {
         sequelize,
+        timestamps: false,
         modelName: 'Comment',
     });
     return Comment;
