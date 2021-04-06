@@ -27,7 +27,6 @@ module.exports = (sequelize, DataTypes) => {
         imageUrl: DataTypes.STRING
     }, {
         sequelize,
-        timestamps: false,
         modelName: 'Article',
     });
     return Article;

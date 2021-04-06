@@ -28,7 +28,6 @@ module.exports = (sequelize, DataTypes) => {
         publicationDate: DataTypes.DATE
     }, {
         sequelize,
-        timestamps: false,
         modelName: 'Comment',
     });
     return Comment;

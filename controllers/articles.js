@@ -10,13 +10,11 @@ exports.createArticle = (req, res, next) => {
     let title = req.body.title;
     let description = req.body.description;
     let imageUrl = req.body.imageUrl;
-    let publicationDate = req.body.publicationDate;
 
     if (
         title == null ||
         description == null ||
-        imageUrl == null ||
-        publicationDate == null
+        imageUrl == null
 
     ) {
         return res.status(400).json({ error: 'Bad request type' });
@@ -31,7 +29,7 @@ exports.createArticle = (req, res, next) => {
                         title: title,
                         description: description,
                         imageUrl: imageUrl,
-                        publicationDate: publicationDate,
+
                         UserId: userFound.id
                     })
                     .then(newArticle => {

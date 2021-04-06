@@ -12,13 +12,9 @@ exports.createComment = (req, res, next) => {
     const articleId = req.params.id
 
     let content = req.body.content;
-    let publicationDate = req.body.publicationDate;
 
-    if (
-        content == null ||
-        publicationDate == null
 
-    ) {
+    if (content == null) {
         return res.status(400).json({ error: 'Bad request type' });
     }
     models.User.findOne({
@@ -29,7 +25,6 @@ exports.createComment = (req, res, next) => {
             if (userFound) {
                 models.Comment.create({
                         content: content,
-                        publicationDate: publicationDate,
                         UserId: userFound.id,
                         ArticleId: articleId
 
