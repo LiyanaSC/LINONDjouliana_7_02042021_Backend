@@ -84,6 +84,25 @@ exports.getAllArticles = (req, res, next) => {
 
 exports.getOneArticle = (req, res, next) => {
 
+    models.Article.findAll({
+            where: { id: req.params.id },
+            include: [{
+                model: models.User,
+                attributes: ['lastname', 'firstname']
+            }]
+        })
+        .then(OneArticle => {
+            if (OneArticle) {
+                res.status(200).json(OneArticle);
+            } else {
+                return res.status(404).json({ error: 'not found' });
+            }
+        })
+        .catch(err => {
+            return res.status(400).json({ error: 'unable to verify user' });
+
+        })
+
 };
 
 exports.updateArticle = (req, res, next) => {
