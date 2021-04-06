@@ -58,7 +58,7 @@ exports.getAllComments = (req, res, next) => {
 
     models.Comment.findAll({
             where: { articleId: req.params.id },
-            order: [(order != null) ? order.split(':') : ['publicationDate', 'ASC']],
+            order: [(order != null) ? order.split(':') : ['createdAt', 'ASC']],
             attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
             limit: (!isNaN(limit)) ? limit : null,
             offset: (!isNaN(offset)) ? offset : null,
