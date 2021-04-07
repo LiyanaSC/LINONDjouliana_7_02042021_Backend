@@ -6,15 +6,15 @@ exports.createArticle = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
+    console.log("administateur", decodedToken.isAdmin, "and", userId)
 
     let title = req.body.title;
     let description = req.body.description;
-    let imageUrl = req.body.imageUrl;
 
     if (
+        Object.keys(req.body).length != 2 ||
         title == null ||
-        description == null ||
-        imageUrl == null
+        description == null
 
     ) {
         return res.status(400).json({ error: 'Bad request type' });
@@ -28,8 +28,6 @@ exports.createArticle = (req, res, next) => {
                 models.Article.create({
                         title: title,
                         description: description,
-                        imageUrl: imageUrl,
-
                         UserId: userFound.id
                     })
                     .then(newArticle => {
@@ -148,8 +146,7 @@ exports.deleteArticle = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
-    const title = req.body.title;
-    const description = req.body.description;
+
     const articleId = req.params.id
 
     models.Article.findOne({

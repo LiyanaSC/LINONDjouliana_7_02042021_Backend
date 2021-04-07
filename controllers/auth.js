@@ -21,9 +21,10 @@ exports.signup = (req, res, next) => {
     let password = req.body.password;
     let lastname = req.body.lastname;
     let firstname = req.body.firstname;
-
+    console.log(Object.keys(req.body).length)
 
     if (
+        Object.keys(req.body).length != 4 ||
         email == null ||
         password == null ||
         lastname == null ||
@@ -41,9 +42,6 @@ exports.signup = (req, res, next) => {
         return res.status(400).json({ error: 'password insecure try again' });
     } else if (validator.validate(req.body.email) == false) {
         return res.status(400).json({ error: 'not an email' });
-    } else if (!req.body.email ||
-        !req.body.password) {
-        return res.status(400).json({ error: 'permission denied' });
     }
     models.User.findOne({
             attributes: ['email'],
@@ -85,14 +83,16 @@ exports.signup = (req, res, next) => {
 
 
 exports.login = (req, res, next) => {
+
     let email = req.body.email;
     let password = req.body.password;
 
     if (
+        Object.keys(req.body).length != 2 ||
         email == null ||
         password == null
     ) {
-        return res.status(400).json({ error: 'Missing params' });
+        return res.status(400).json({ error: 'Bad request' });
     } else if (schema.validate(req.body.password) == false) {
         return res.status(406).send(new Error('password insecure try again'));
     } else if (validator.validate(req.body.email) == false) {
