@@ -3,12 +3,14 @@ const router = express.Router();
 
 const articleControl = require('../controllers/articles');
 const commentControl = require('../controllers/comments');
+const publicationsControl = require('../controllers/publications');
+
 const auth = require('../middleware/token');
 //const multer = require('../middleware/multer-config');
 
 
 
-//router.get("/", auth, sauceControl.getAllSauces);
+router.get("/all", auth, publicationsControl.getAllPublications);
 
 router.get("/articles", auth, articleControl.getAllArticles);
 router.get("/articles/:id", auth, articleControl.getOneArticle);
