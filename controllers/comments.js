@@ -87,6 +87,7 @@ exports.updateComment = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
+    const isAdmin = decodedToken.isAdmin;
     const content = req.body.content;
 
     models.Comment.findOne({
@@ -97,7 +98,7 @@ exports.updateComment = (req, res, next) => {
 
 
             if (commentFound) {
-                if (userId != commentFound.UserId) {
+                if (userId != commentFound.UserId && isAdmin !== true) {
                     return res.status(400).json({ error: 'permission denied' });
                 }
                 commentFound.update({
@@ -124,7 +125,9 @@ exports.deleteComment = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
+    const isAdmin = decodedToken.isAdmin;
     const content = req.body.content;
+    console.log(req.params.id)
 
     models.Comment.findOne({
             attributes: ['content', 'id', 'UserId', ],
@@ -132,9 +135,9 @@ exports.deleteComment = (req, res, next) => {
         })
         .then(commentFound => {
 
-
+            console.log(commentFound)
             if (commentFound) {
-                if (userId != commentFound.UserId) {
+                if (userId != commentFound.UserId && isAdmin !== true) {
                     return res.status(400).json({ error: 'permission denied' });
                 }
                 commentFound.destroy()

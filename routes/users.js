@@ -6,7 +6,7 @@ const auth = require('../middleware/token');
 const UsersControl = require('../controllers/users');
 
 router.get("/:id", auth, UsersControl.getUsers);
-router.put("/:id", auth, UsersControl.updateUsers);
+router.put("/:id", auth, /* multer,*/ UsersControl.updateUsers);
 router.delete("/:id", auth, UsersControl.deleteUsers);
 
 module.exports = router;

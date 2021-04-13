@@ -21,7 +21,7 @@ exports.signup = (req, res, next) => {
     let password = req.body.password;
     let lastname = req.body.lastname;
     let firstname = req.body.firstname;
-    console.log(Object.keys(req.body).length)
+    console.log(req.body)
 
     if (
         Object.keys(req.body).length != 4 ||
@@ -83,7 +83,7 @@ exports.signup = (req, res, next) => {
 
 
 exports.login = (req, res, next) => {
-
+    console.log(req.body)
     let email = req.body.email;
     let password = req.body.password;
 
@@ -103,6 +103,7 @@ exports.login = (req, res, next) => {
         })
         .then(function(userFound) {
             if (userFound) {
+
                 bcrypt.compare(password, userFound.password, function(errBycrypt, resBycrypt) {
                     if (resBycrypt) {
 

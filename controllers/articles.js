@@ -58,13 +58,16 @@ exports.getAllArticles = (req, res, next) => {
     const order = req.query.order;
 
     models.Article.findAll({
-            order: [(order != null) ? order.split(':') : ['createdAt', 'ASC']],
+            order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']],
             attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
             limit: (!isNaN(limit)) ? limit : null,
             offset: (!isNaN(offset)) ? offset : null,
             include: [{
                 model: models.User,
                 attributes: ['lastname', 'firstname']
+            }, {
+                model: models.Comment,
+                attributes: ['content']
             }]
         })
         .then(Articles => {
@@ -107,6 +110,7 @@ exports.updateArticle = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
+    const isAdmin = decodedToken.isAdmin;
     const title = req.body.title;
     const description = req.body.description;
     const articleId = req.params.id
@@ -118,7 +122,7 @@ exports.updateArticle = (req, res, next) => {
         .then(articleFound => {
 
             if (articleFound) {
-                if (userId != articleFound.UserId) {
+                if (userId != articleFound.UserId && isAdmin !== true) {
                     return res.status(400).json({ error: 'permission denied' });
                 }
                 articleFound.update({
@@ -146,6 +150,7 @@ exports.deleteArticle = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
+    const isAdmin = decodedToken.isAdmin;
 
     const articleId = req.params.id
 
@@ -156,7 +161,7 @@ exports.deleteArticle = (req, res, next) => {
         .then(articleFound => {
 
             if (articleFound) {
-                if (userId != articleFound.UserId) {
+                if (userId != articleFound.UserId && isAdmin !== true) {
                     return res.status(400).json({ error: 'permission denied' });
                 }
                 models.Comment.findAll({

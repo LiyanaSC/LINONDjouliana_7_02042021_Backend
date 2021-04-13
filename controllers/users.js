@@ -29,6 +29,7 @@ exports.updateUsers = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
+    const isAdmin = decodedToken.isAdmin;
     let firstname = req.body.firstname;
     let lastname = req.body.lastname;
 
@@ -47,7 +48,7 @@ exports.updateUsers = (req, res, next) => {
         })
         .then(userFound => {
             if (userFound) {
-                if (userId != req.params.id) {
+                if (userId != req.params.id && isAdmin !== true) {
                     return res.status(400).json({ error: 'permission denied' });
                 }
                 userFound.update({
@@ -64,6 +65,9 @@ exports.updateUsers = (req, res, next) => {
                     return res.status(404).json({ error: 'user not found' });
                 })
 
+            } else {
+                return res.status(404).json({ error: 'user not found' });
+
             }
         }).catch(err => {
             return res.status(400).json({ error: 'unable to verify user' });
@@ -76,17 +80,64 @@ exports.deleteUsers = (req, res, next) => {
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;
+    const isAdmin = decodedToken.isAdmin;
+
 
     if (userId < 1 ||
-        userId != req.params.id) {
+        userId != req.params.id && isAdmin !== true) {
         return res.status(400).json({ error: 'permission denied' });
     }
     models.User.findOne({
-            attributes: ['firstname', 'lastname', 'id'],
-            where: { id: userId }
+            where: { id: req.params.id }
         })
         .then(userFound => {
+            console.log(userFound)
             if (userFound) {
+                if (userId != userFound.id && isAdmin !== true) {
+                    return res.status(400).json({ error: 'permission denied for user' });
+                }
+
+                models.Article.findAll({
+                        where: { UserId: req.params.id }
+                    })
+                    .then(articles => {
+
+                        if (articles) {
+                            articles.forEach(article => {
+                                article.destroy()
+                            });
+
+                        } else {
+                            return res.status(404).json({ error: 'not found' });
+                        }
+
+                    })
+                    .catch(err => {
+                        return res.status(400).json({ error: 'unable to found article' });
+
+                    })
+
+                models.Comment.findAll({
+                        where: { UserId: req.params.id },
+
+                    })
+                    .then(Comments => {
+
+                        if (Comments) {
+                            Comments.forEach(comment => {
+                                comment.destroy()
+                            });
+
+                        } else {
+                            return res.status(404).json({ error: 'not found' });
+                        }
+                    })
+                    .catch(err => {
+                        return res.status(400).json({ error: 'unable to found comment' });
+
+                    })
+
+
 
                 userFound.destroy()
                     .then(deletedUser => {
