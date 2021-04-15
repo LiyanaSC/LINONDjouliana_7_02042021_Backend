@@ -107,12 +107,66 @@ exports.login = (req, res, next) => {
                 bcrypt.compare(password, userFound.password, function(errBycrypt, resBycrypt) {
                     if (resBycrypt) {
 
+                        // tokenList[refreshToken] = response
                         return res.status(200).json({
-                            'userId': userFound.id,
-                            'token': jwt.sign({ userId: userFound.id, isAdmin: userFound.admin },
-                                'RANDOM_TOKEN_SECRET', { expiresIn: '24h' }
-                            )
+                            userId: userFound.id,
+                            token: jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '600s' }),
+                            refreshToken: jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '2150h' }),
+                            admin: userFound.admin
                         })
+                    }
+                    return res.status(401).json({ error: 'mot de passe incorrect' });
+
+                })
+            } else {
+                return res.status(400).json({ error: 'unable to verify user' });
+            }
+        })
+        .catch(function(err) {
+            return res.status(500).json({ error: 'unable to verify user' });
+        })
+
+
+
+};
+
+exports.token = (req, res, next) => {
+
+    let email = req.body.email;
+    let password = req.body.password;
+
+    if (
+        Object.keys(req.body).length != 3 ||
+        email == null ||
+        password == null
+    ) {
+        return res.status(400).json({ error: 'Bad request' });
+    } else if (schema.validate(req.body.password) == false) {
+        return res.status(406).send(new Error('password insecure try again'));
+    } else if (validator.validate(req.body.email) == false) {
+        return res.status(406).send(new Error('not a email'));
+    }
+    models.User.findOne({
+            where: { email: email }
+        })
+        .then(function(userFound) {
+            if (userFound) {
+
+                bcrypt.compare(password, userFound.password, function(errBycrypt, resBycrypt) {
+                    if (resBycrypt &&
+                        (req.body.token)) {
+                        const token = jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '60s' })
+
+
+                        const response = {
+                            'userId': userFound.id,
+                            'token': token,
+                            'admin': userFound.admin
+                        }
+
+                        return res.status(200).json(response)
+                    } else {
+                        res.status(404).send('Invalid request')
                     }
                     return res.status(401).json({ error: 'mot de passe incorrect' });
 

@@ -55,6 +55,7 @@ exports.getAllComments = (req, res, next) => {
     const limit = parseInt(req.query.limit);
     const offset = parseInt(req.query.offset);
     const order = req.query.order;
+    console.log(req.params.id)
 
     models.Comment.findAll({
             where: { articleId: req.params.id },

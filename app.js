@@ -3,6 +3,7 @@ const bodyParser = require('body-parser');
 const mysql = require('mysql');
 
 
+
 //const path = require('path');
 
 
@@ -12,6 +13,8 @@ const articlesRoute = require('./routes/articles');
 
 
 const app = express();
+
+
 
 const pool = mysql.createPool({
     connectionLimit: 10,
@@ -35,6 +38,8 @@ app.use((req, res, next) => {
 });
 
 app.use(bodyParser.json());
+
+
 
 app.use('/api/auth', authroutes);
 app.use('/api/users', usersRoute);
