@@ -17,12 +17,7 @@ const app = express();
 
 
 const pool = mysql.createPool({
-    connectionLimit: 10,
-    host: 'localhost',
-    user: 'student',
-    password: 'Study2021',
-    database: 'pagemania',
-    port: '3306'
+
 });
 
 pool.query('SELECT 1 + 1 AS solution', function(error, results, fields) {

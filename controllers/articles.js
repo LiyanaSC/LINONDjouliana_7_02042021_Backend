@@ -20,7 +20,7 @@ exports.createArticle = (req, res, next) => {
         return res.status(400).json({ error: 'Bad request type' });
     }
     models.User.findOne({
-            attributes: ['id'],
+            attributes: ['id', 'lastname', 'firstname'],
             where: { id: userId }
         })
         .then(userFound => {
@@ -32,6 +32,12 @@ exports.createArticle = (req, res, next) => {
                     })
                     .then(newArticle => {
                         if (newArticle) {
+                            newArticle = newArticle.toJSON()
+                            newArticle.User = {
+                                firstname: userFound.firstname,
+                                lastname: userFound.lastname
+                            }
+
                             return res.status(200).json(newArticle);
                         } else {
                             return res.status(500).json({ error: 'not create' });
@@ -84,6 +90,7 @@ exports.getAllArticles = (req, res, next) => {
 };
 
 exports.getOneArticle = (req, res, next) => {
+    console.log(req)
 
     models.Article.findOne({
             where: { id: req.params.id },

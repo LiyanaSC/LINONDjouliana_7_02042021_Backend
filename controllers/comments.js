@@ -18,7 +18,7 @@ exports.createComment = (req, res, next) => {
         return res.status(400).json({ error: 'Bad request type' });
     }
     models.User.findOne({
-            attributes: ['id'],
+            attributes: ['id', 'firstname', 'lastname'],
             where: { id: userId }
         })
         .then(userFound => {
@@ -26,11 +26,16 @@ exports.createComment = (req, res, next) => {
                 models.Comment.create({
                         content: content,
                         UserId: userFound.id,
-                        ArticleId: articleId
+                        ArticleId: parseInt(articleId),
 
                     })
                     .then(newComment => {
                         if (newComment) {
+                            newComment = newComment.toJSON()
+                            newComment.User = {
+                                firstname: userFound.firstname,
+                                lastname: userFound.lastname
+                            }
                             return res.status(200).json(newComment);
                         } else {
                             return res.status(500).json({ error: 'not create' });

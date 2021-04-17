@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken')
 const models = require('../models')
 const passwordValidator = require('password-validator');
 const validator = require("email-validator");
+EncryptedField = require('sequelize-encrypted');
 
 
 
@@ -17,11 +18,11 @@ schema
 
 
 exports.signup = (req, res, next) => {
-    let email = req.body.email;
+    let email = req.body.email
     let password = req.body.password;
     let lastname = req.body.lastname;
     let firstname = req.body.firstname;
-    console.log(req.body)
+
 
     if (
         Object.keys(req.body).length != 4 ||
@@ -43,6 +44,7 @@ exports.signup = (req, res, next) => {
     } else if (validator.validate(req.body.email) == false) {
         return res.status(400).json({ error: 'not an email' });
     }
+
     models.User.findOne({
             attributes: ['email'],
             where: { email: email }
@@ -51,7 +53,6 @@ exports.signup = (req, res, next) => {
             if (!userFound) {
                 bcrypt.hash(req.body.password, 10)
                     .then(hash => {
-
                         const user = models.User.create({
                             email: email,
                             password: hash,
@@ -64,6 +65,7 @@ exports.signup = (req, res, next) => {
                         .then((newUser) => res.status(201).json({
                                 'userId': newUser.id,
                                 message: 'nouvel(le) utilisateur/trice enregistré(e) !'
+
                             }))
                             .catch(error => res.status(400).json({ error }));
                     })
@@ -110,8 +112,8 @@ exports.login = (req, res, next) => {
                         // tokenList[refreshToken] = response
                         return res.status(200).json({
                             userId: userFound.id,
-                            token: jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '600s' }),
-                            refreshToken: jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '2150h' }),
+                            token: jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '10h' }),
+                            refreshToken: jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_REFRESH_TOKEN_SECRET', { expiresIn: '2150h' }),
                             admin: userFound.admin
                         })
                     }
@@ -131,53 +133,35 @@ exports.login = (req, res, next) => {
 };
 
 exports.token = (req, res, next) => {
+    let admin = req.body.admin;
+    let userId = req.body.userId;
+    let tokenList = req.body.tokenList
+    let refreshToken = req.body.refreshToken
 
-    let email = req.body.email;
-    let password = req.body.password;
 
     if (
-        Object.keys(req.body).length != 3 ||
-        email == null ||
-        password == null
+        Object.keys(req.body).length != 4 ||
+        admin == null ||
+        userId == null ||
+        refreshToken == null ||
+        tokenList == null
     ) {
         return res.status(400).json({ error: 'Bad request' });
-    } else if (schema.validate(req.body.password) == false) {
-        return res.status(406).send(new Error('password insecure try again'));
-    } else if (validator.validate(req.body.email) == false) {
-        return res.status(406).send(new Error('not a email'));
+    } else if ((tokenList.find(element => element = refreshToken)) !== undefined) {
+
+        const token = jwt.sign({ userId: userId, isAdmin: admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '10h' })
+        const response = {
+            'userId': userId,
+            'token': token,
+            'admin': admin
+        }
+
+        return res.status(200).json({ response })
+
+
+    } else {
+        res.status(404).send('Invalid request here')
     }
-    models.User.findOne({
-            where: { email: email }
-        })
-        .then(function(userFound) {
-            if (userFound) {
-
-                bcrypt.compare(password, userFound.password, function(errBycrypt, resBycrypt) {
-                    if (resBycrypt &&
-                        (req.body.token)) {
-                        const token = jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '60s' })
-
-
-                        const response = {
-                            'userId': userFound.id,
-                            'token': token,
-                            'admin': userFound.admin
-                        }
-
-                        return res.status(200).json(response)
-                    } else {
-                        res.status(404).send('Invalid request')
-                    }
-                    return res.status(401).json({ error: 'mot de passe incorrect' });
-
-                })
-            } else {
-                return res.status(400).json({ error: 'unable to verify user' });
-            }
-        })
-        .catch(function(err) {
-            return res.status(500).json({ error: 'unable to verify user' });
-        })
 
 
 
