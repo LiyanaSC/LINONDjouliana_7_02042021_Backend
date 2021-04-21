@@ -62,12 +62,16 @@ exports.getAllArticles = (req, res, next) => {
     const limit = parseInt(req.query.limit);
     const offset = parseInt(req.query.offset);
     const order = req.query.order;
+    const page = req.query.page
+    const added = parseInt(req.query.added)
+
+    console.log("ici", 5 * page + added)
 
     models.Article.findAll({
             order: [(order != null) ? order.split(':') : ['createdAt', 'DESC']],
             attributes: (fields !== '*' && fields != null) ? fields.split(',') : null,
-            limit: (!isNaN(limit)) ? limit : null,
-            offset: (!isNaN(offset)) ? offset : null,
+            limit: (!isNaN(limit)) ? limit : 5,
+            offset: (!isNaN(offset)) ? offset : 5 * page + added,
             include: [{
                 model: models.User,
                 attributes: ['lastname', 'firstname']
@@ -90,7 +94,7 @@ exports.getAllArticles = (req, res, next) => {
 };
 
 exports.getOneArticle = (req, res, next) => {
-    console.log(req)
+
 
     models.Article.findOne({
             where: { id: req.params.id },
@@ -114,6 +118,7 @@ exports.getOneArticle = (req, res, next) => {
 };
 
 exports.updateArticle = (req, res, next) => {
+    console.log(req.headers.authorization)
     const token = req.headers.authorization.split(' ')[1];
     const decodedToken = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
     const userId = decodedToken.userId;

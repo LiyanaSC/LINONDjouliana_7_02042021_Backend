@@ -109,10 +109,10 @@ exports.login = (req, res, next) => {
                 bcrypt.compare(password, userFound.password, function(errBycrypt, resBycrypt) {
                     if (resBycrypt) {
 
-                        // tokenList[refreshToken] = response
+
                         return res.status(200).json({
                             userId: userFound.id,
-                            token: jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '10h' }),
+                            token: jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '35s' }),
                             refreshToken: jwt.sign({ userId: userFound.id, isAdmin: userFound.admin }, 'RANDOM_REFRESH_TOKEN_SECRET', { expiresIn: '2150h' }),
                             admin: userFound.admin
                         })
@@ -135,21 +135,25 @@ exports.login = (req, res, next) => {
 exports.token = (req, res, next) => {
     let admin = req.body.admin;
     let userId = req.body.userId;
-    let tokenList = req.body.tokenList
     let refreshToken = req.body.refreshToken
 
+    const decodedRefresh = jwt.verify(refreshToken, 'RANDOM_REFRESH_TOKEN_SECRET');
+    const userIdRefresh = decodedRefresh.userId;
+    const adminRefresh = decodedRefresh.isAdmin;
 
     if (
-        Object.keys(req.body).length != 4 ||
+
         admin == null ||
         userId == null ||
-        refreshToken == null ||
-        tokenList == null
+        refreshToken == null
     ) {
         return res.status(400).json({ error: 'Bad request' });
-    } else if ((tokenList.find(element => element = refreshToken)) !== undefined) {
+    } else if (userIdRefresh != userId ||
+        adminRefresh != admin) {
+        return res.status(400).json({ error: 'Invalid user' });
+    } else {
 
-        const token = jwt.sign({ userId: userId, isAdmin: admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '10h' })
+        const token = jwt.sign({ userId: userId, isAdmin: admin }, 'RANDOM_TOKEN_SECRET', { expiresIn: '35s' })
         const response = {
             'userId': userId,
             'token': token,
@@ -159,8 +163,6 @@ exports.token = (req, res, next) => {
         return res.status(200).json({ response })
 
 
-    } else {
-        res.status(404).send('Invalid request here')
     }
 
 
