@@ -20,9 +20,8 @@ const pool = mysql.createPool({
 
 });
 
-pool.query('SELECT 1 + 1 AS solution', function(error, results, fields) {
-    if (error) throw error;
-    console.log('Connected to MySQL! Test result: ', results[0].solution);
+pool.query(function() {
+    console.log('Connected to MySQL! Test result: ');
 });
 
 app.use((req, res, next) => {

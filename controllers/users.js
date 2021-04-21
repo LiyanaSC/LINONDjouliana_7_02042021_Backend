@@ -7,7 +7,7 @@ const models = require('../models')
 exports.getUsers = (req, res, next) => {
 
     const userId = req.params.id
-    if (userId < 1) {
+    if (userId == null) {
         return res.status(400).json({ error: 'USER UNDEFINED' });
     }
     models.User.findOne({
@@ -83,7 +83,7 @@ exports.deleteUsers = (req, res, next) => {
     const isAdmin = decodedToken.isAdmin;
 
 
-    if (userId < 1 ||
+    if ((userId == null) ||
         userId != req.params.id && isAdmin !== true) {
         return res.status(400).json({ error: 'permission denied' });
     }
