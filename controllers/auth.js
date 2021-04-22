@@ -4,6 +4,8 @@ const models = require('../models')
 const passwordValidator = require('password-validator');
 const validator = require("email-validator");
 EncryptedField = require('sequelize-encrypted');
+const CryptoJS = require("crypto-js");
+
 
 
 
@@ -22,7 +24,8 @@ exports.signup = (req, res, next) => {
     let password = req.body.password;
     let lastname = req.body.lastname;
     let firstname = req.body.firstname;
-
+    const hashedMail = CryptoJS.SHA256(req.body.email).toString(CryptoJS.enc.Base64)
+    console.log(hashedMail)
 
     if (
         Object.keys(req.body).length != 4 ||
@@ -47,14 +50,14 @@ exports.signup = (req, res, next) => {
 
     models.User.findOne({
             attributes: ['email'],
-            where: { email: email }
+            where: { email: hashedMail }
         })
         .then(function(userFound) {
             if (!userFound) {
                 bcrypt.hash(req.body.password, 10)
                     .then(hash => {
                         const user = models.User.create({
-                            email: email,
+                            email: hashedMail,
                             password: hash,
                             lastname: lastname,
                             firstname: firstname
@@ -88,6 +91,8 @@ exports.login = (req, res, next) => {
     console.log(req.body)
     let email = req.body.email;
     let password = req.body.password;
+    const hashedMail = CryptoJS.SHA256(req.body.email).toString(CryptoJS.enc.Base64)
+
 
     if (
         Object.keys(req.body).length != 2 ||
@@ -101,7 +106,7 @@ exports.login = (req, res, next) => {
         return res.status(406).send(new Error('not a email'));
     }
     models.User.findOne({
-            where: { email: email }
+            where: { email: hashedMail }
         })
         .then(function(userFound) {
             if (userFound) {
