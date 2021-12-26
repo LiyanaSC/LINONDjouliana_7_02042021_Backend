@@ -25,7 +25,6 @@ exports.signup = (req, res, next) => {
     let lastname = req.body.lastname;
     let firstname = req.body.firstname;
     const hashedMail = CryptoJS.SHA256(req.body.email).toString(CryptoJS.enc.Base64)
-    console.log(hashedMail)
 
     if (
         Object.keys(req.body).length != 4 ||
